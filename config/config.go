@@ -1,6 +1,7 @@
 package config
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"log"
@@ -12,18 +13,18 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-type Config struct { //uploads
+type Config struct {
 	BaseUrl       string `envconfig:"BASE_URL" required:"true" default:"http://localhost:8085"`
 	ImageDir      string `envconfig:"IMAGE_DIR" required:"true" default:"uploads"`
 	MySQLUser     string `envconfig:"MYSQL_USER" required:"true" default:"root"`
-	MySQLPassword string `envconfig:"MYSQL_PASSWORD" required:"true" default:"root"`
+	MySQLPassword string `envconfig:"MYSQL_PASSWORD" default:""`
 	MySQLHost     string `envconfig:"MYSQL_HOST" default:"localhost"`
 	MySQLPort     int    `envconfig:"MYSQL_PORT" default:"3306"`
 	MySQLDBName   string `envconfig:"MYSQL_DBNAME" required:"true" default:"sales"`
 
-	ElasticAddresses string `envconfig:"ELASTIC_ADDRESSES" default:"http://localhost:9200"`
-	ElasticUsername  string `envconfig:"ELASTIC_USERNAME"`
-	ElasticPassword  string `envconfig:"ELASTIC_PASSWORD"`
+	ElasticAddresses string `envconfig:"ELASTIC_ADDRESSES" default:"https://localhost:9200"`
+	ElasticUsername  string `envconfig:"ELASTIC_USERNAME" default:"elastic"`
+	ElasticPassword  string `envconfig:"ELASTIC_PASSWORD" default:"TNZhL*+m23cTuEXWDAW_"`
 }
 
 func LoadConfig() *Config {
@@ -49,12 +50,11 @@ func InitDBAndElastic(cfg *Config) (*sql.DB, *elasticsearch.Client) {
 		log.Fatalf("Failed to connect to MySQL: %v", err)
 	}
 
-	// Ping buat validasi koneksi MySQL
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Failed to ping MySQL: %v", err)
 	}
 
-	// Init Elasticsearch
+	// Init Elasticsearch with TLS bypass for self-signed certificate
 	esAddresses := []string{cfg.ElasticAddresses}
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: esAddresses,
@@ -62,6 +62,9 @@ func InitDBAndElastic(cfg *Config) (*sql.DB, *elasticsearch.Client) {
 		Password:  cfg.ElasticPassword,
 		Transport: &http.Transport{
 			ResponseHeaderTimeout: time.Second * 10,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true, // ⚠️ Only use this in development
+			},
 		},
 	})
 
@@ -69,7 +72,6 @@ func InitDBAndElastic(cfg *Config) (*sql.DB, *elasticsearch.Client) {
 		log.Fatalf("Failed to create Elasticsearch client: %v", err)
 	}
 
-	// Test koneksi Elasticsearch
 	res, err := esClient.Info()
 	if err != nil {
 		log.Fatalf("Failed to connect to Elasticsearch: %v", err)
