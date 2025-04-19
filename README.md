@@ -1,4 +1,4 @@
-# Product Management API
+# Simple Elasticsearch & mysql
 
 API sederhana untuk mengelola produk (create, update, get, search, delete) menggunakan Go, MySQL, dan Elasticsearch.
 
@@ -14,8 +14,8 @@ Pastikan Anda sudah menginstal:
 
 1. Clone repository ini:
 ```bash
-git clone https://github.com/username/repo-name.git
-cd repo-name
+git clone https://gitlab.com/kusnadi8605/simple_mysql_elasticsearch.git
+cd simple_mysql_elasticsearch
 ```
 
 2. Buat database di MySQL:
