@@ -14,7 +14,7 @@ Pastikan Anda sudah menginstal:
 
 1. Clone repository ini:
 ```bash
-git clone https://gitlab.com/kusnadi8605/simple_mysql_elasticsearch.git
+git clone https://github.com/Imammahmuda1804/simple_mysql-elasticsearch.git
 cd simple_mysql_elasticsearch
 ```
 
